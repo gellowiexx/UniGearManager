@@ -40,16 +40,16 @@ class StaffLoginActivity : AppCompatActivity() {
             val password = passwordInput.text?.toString().orEmpty()
 
             var hasError = false
-            if (staffId.isEmpty()) {
-                staffIdInputLayout.error = "Staff ID is required"
+            AuthRules.userIdError(staffId, "Staff ID")?.let {
+                staffIdInputLayout.error = it
                 hasError = true
             }
-            if (email.isEmpty()) {
-                emailInputLayout.error = "Email address is required"
+            AuthRules.emailError(email)?.let {
+                emailInputLayout.error = it
                 hasError = true
             }
-            if (password.isEmpty()) {
-                passwordInputLayout.error = "Password is required"
+            AuthRules.passwordError(password)?.let {
+                passwordInputLayout.error = it
                 hasError = true
             }
 

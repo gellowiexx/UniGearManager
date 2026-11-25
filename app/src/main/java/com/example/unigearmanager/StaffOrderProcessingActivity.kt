@@ -114,7 +114,7 @@ class StaffOrderProcessingActivity : AppCompatActivity() {
         return card().apply {
             // Header: Emoji + Item Name + Student Name
             addView(
-                label("$emoji ${order.itemName}", size = 18f, bold = true)
+                label("$emoji ${order.itemName}${order.sizeLabel()}", size = 18f, bold = true)
             )
             addView(
                 label("Ordered by: ${order.studentName}", size = 13f).withMargins(top = 6)
@@ -227,6 +227,8 @@ class StaffOrderProcessingActivity : AppCompatActivity() {
         button.setBackgroundColor(getColor(if (isSelected) R.color.maroon else android.R.color.transparent))
         button.setTextColor(getColor(if (isSelected) R.color.white else R.color.ink))
     }
+
+    private fun StudentOrder.sizeLabel(): String = size?.let { " ($it)" }.orEmpty()
 
     private fun showOfflineSyncWarningIfNeeded() {
         if (!UniWearRepository.isRemoteSyncEnabled) {

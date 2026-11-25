@@ -5,6 +5,7 @@ import android.view.View
 import android.widget.LinearLayout
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import com.example.unigearmanager.*
 
 class StatusActivity : AppCompatActivity() {
     private lateinit var statusListContainer: LinearLayout
@@ -35,7 +36,7 @@ class StatusActivity : AppCompatActivity() {
         val shownStatus = if (order.claimed) "Claimed" else order.status
         return card().apply {
             addView(label("#${order.id} - ${order.studentName}", size = 18f, bold = true))
-            addView(label("${order.itemName} x ${order.quantity}", size = 14f))
+            addView(label("${order.itemName}${order.sizeLabel()} x ${order.quantity}", size = 14f))
             addView(chip(shownStatus, available = shownStatus == "Ready for pickup" || shownStatus == "Claimed").withMargins(top = 8))
             addView(label(statusDescription(shownStatus), size = 13f))
 
@@ -71,5 +72,6 @@ class StatusActivity : AppCompatActivity() {
             else -> "Order progress is being updated."
         }
     }
-}
 
+    private fun StudentOrder.sizeLabel(): String = size?.let { " ($it)" }.orEmpty()
+}

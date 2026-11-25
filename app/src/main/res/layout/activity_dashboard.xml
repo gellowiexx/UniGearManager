@@ -49,30 +49,6 @@
 
             <LinearLayout
                 android:layout_width="match_parent"
-                android:layout_height="92dp"
-                android:layout_marginTop="16dp"
-                android:orientation="horizontal"
-                android:baselineAligned="false">
-
-                <include layout="@layout/card_metric_customers" />
-
-                <include layout="@layout/card_metric_orders" />
-            </LinearLayout>
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="92dp"
-                android:layout_marginTop="12dp"
-                android:orientation="horizontal"
-                android:baselineAligned="false">
-
-                <include layout="@layout/card_metric_products" />
-
-                <include layout="@layout/card_metric_sales" />
-            </LinearLayout>
-
-            <LinearLayout
-                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="16dp"
                 android:orientation="horizontal">
@@ -151,26 +127,10 @@
                 android:orientation="horizontal">
 
                 <com.google.android.material.button.MaterialButton
-                    android:id="@+id/btnCatalog"
-                    style="@style/Widget.MaterialComponents.Button"
-                    android:layout_width="0dp"
-                    android:layout_height="54dp"
-                    android:layout_weight="1"
-                    android:fontFamily="sans-serif-black"
-                    android:text="Catalog"
-                    android:textAllCaps="false"
-                    android:textColor="@color/ink"
-                    app:backgroundTint="@color/yellow"
-                    app:cornerRadius="14dp"
-                    app:strokeColor="@color/line"
-                    app:strokeWidth="2dp" />
-
-                <com.google.android.material.button.MaterialButton
                     android:id="@+id/btnOrders"
                     style="@style/Widget.MaterialComponents.Button"
                     android:layout_width="0dp"
                     android:layout_height="54dp"
-                    android:layout_marginStart="10dp"
                     android:layout_weight="1"
                     android:fontFamily="sans-serif-black"
                     android:text="Orders"
@@ -180,19 +140,13 @@
                     app:cornerRadius="14dp"
                     app:strokeColor="@color/line"
                     app:strokeWidth="2dp" />
-            </LinearLayout>
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="10dp"
-                android:orientation="horizontal">
 
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/btnInventory"
                     style="@style/Widget.MaterialComponents.Button"
                     android:layout_width="0dp"
                     android:layout_height="54dp"
+                    android:layout_marginStart="10dp"
                     android:layout_weight="1"
                     android:fontFamily="sans-serif-black"
                     android:text="Inventory"
@@ -202,13 +156,19 @@
                     app:cornerRadius="14dp"
                     app:strokeColor="@color/line"
                     app:strokeWidth="2dp" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:orientation="horizontal">
 
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/btnPayments"
                     style="@style/Widget.MaterialComponents.Button"
                     android:layout_width="0dp"
                     android:layout_height="54dp"
-                    android:layout_marginStart="10dp"
                     android:layout_weight="1"
                     android:fontFamily="sans-serif-black"
                     android:text="Payments"
@@ -218,19 +178,13 @@
                     app:cornerRadius="14dp"
                     app:strokeColor="@color/line"
                     app:strokeWidth="2dp" />
-            </LinearLayout>
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="10dp"
-                android:orientation="horizontal">
 
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/btnDistribution"
                     style="@style/Widget.MaterialComponents.Button"
                     android:layout_width="0dp"
                     android:layout_height="54dp"
+                    android:layout_marginStart="10dp"
                     android:layout_weight="1"
                     android:fontFamily="sans-serif-black"
                     android:text="Distribution"
@@ -240,19 +194,41 @@
                     app:cornerRadius="14dp"
                     app:strokeColor="@color/line"
                     app:strokeWidth="2dp" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:orientation="horizontal">
 
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/btnUsers"
                     style="@style/Widget.MaterialComponents.Button"
                     android:layout_width="0dp"
                     android:layout_height="54dp"
-                    android:layout_marginStart="10dp"
                     android:layout_weight="1"
                     android:fontFamily="sans-serif-black"
                     android:text="Users"
                     android:textAllCaps="false"
                     android:textColor="@color/white"
                     app:backgroundTint="@color/maroon"
+                    app:cornerRadius="14dp"
+                    app:strokeColor="@color/line"
+                    app:strokeWidth="2dp" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnAnalytics"
+                    style="@style/Widget.MaterialComponents.Button"
+                    android:layout_width="0dp"
+                    android:layout_height="54dp"
+                    android:layout_marginStart="10dp"
+                    android:layout_weight="1"
+                    android:fontFamily="sans-serif-black"
+                    android:text="Reports"
+                    android:textAllCaps="false"
+                    android:textColor="@color/ink"
+                    app:backgroundTint="@color/yellow"
                     app:cornerRadius="14dp"
                     app:strokeColor="@color/line"
                     app:strokeWidth="2dp" />
@@ -263,21 +239,6 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="10dp"
                 android:orientation="horizontal">
-
-                <com.google.android.material.button.MaterialButton
-                    android:id="@+id/btnAnalytics"
-                    style="@style/Widget.MaterialComponents.Button"
-                    android:layout_width="0dp"
-                    android:layout_height="54dp"
-                    android:layout_weight="1"
-                    android:fontFamily="sans-serif-black"
-                    android:text="Reports"
-                    android:textAllCaps="false"
-                    android:textColor="@color/ink"
-                    app:backgroundTint="@color/yellow"
-                    app:cornerRadius="14dp"
-                    app:strokeColor="@color/line"
-                    app:strokeWidth="2dp" />
 
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/btnStatus"
@@ -288,6 +249,22 @@
                     android:layout_weight="1"
                     android:fontFamily="sans-serif-black"
                     android:text="Availability"
+                    android:textAllCaps="false"
+                    android:textColor="@color/white"
+                    app:backgroundTint="@color/maroon"
+                    app:cornerRadius="14dp"
+                    app:strokeColor="@color/line"
+                    app:strokeWidth="2dp" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnLogout"
+                    style="@style/Widget.MaterialComponents.Button"
+                    android:layout_width="0dp"
+                    android:layout_height="54dp"
+                    android:layout_marginStart="10dp"
+                    android:layout_weight="1"
+                    android:fontFamily="sans-serif-black"
+                    android:text="Log Out"
                     android:textAllCaps="false"
                     android:textColor="@color/white"
                     app:backgroundTint="@color/maroon"

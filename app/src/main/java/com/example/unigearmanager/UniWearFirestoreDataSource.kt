@@ -12,7 +12,8 @@ class UniWearFirestoreDataSource private constructor(private val firestore: Fire
     fun startListening(
         onItemsChanged: (List<GearItem>) -> Unit,
         onOrdersChanged: (List<StudentOrder>) -> Unit,
-        onNotificationsChanged: (List<StudentNotification>) -> Unit
+        onNotificationsChanged: (List<StudentNotification>) -> Unit,
+        onAccountsChanged: (List<StudentAccount>) -> Unit = {}
     ) {
         listeners += firestore.collection(COLLECTION_ITEMS)
             .addSnapshotListener { snapshot, _ ->
@@ -38,6 +39,12 @@ class UniWearFirestoreDataSource private constructor(private val firestore: Fire
                         .mapNotNull { it.toStudentNotification() }
                         .sortedByDescending { it.id }
                 )
+            }
+
+        listeners += firestore.collection(COLLECTION_STUDENT_ACCOUNTS)
+            .addSnapshotListener { snapshot, _ ->
+                snapshot ?: return@addSnapshotListener
+                onAccountsChanged(snapshot.documents.mapNotNull { it.toStudentAccount() })
             }
     }
 
@@ -81,6 +88,18 @@ class UniWearFirestoreDataSource private constructor(private val firestore: Fire
             .set(notification.toMap())
     }
 
+    fun saveStudentAccount(account: StudentAccount) {
+        firestore.collection(COLLECTION_STUDENT_ACCOUNTS)
+            .document(account.userId)
+            .set(account.toMap())
+    }
+
+    fun getStudentAccount(userId: String, onResult: (StudentAccount?) -> Unit) {
+        firestore.collection(COLLECTION_STUDENT_ACCOUNTS).document(userId).get()
+            .addOnSuccessListener { onResult(it.toStudentAccount()) }
+            .addOnFailureListener { onResult(null) }
+    }
+
     fun stop() {
         listeners.forEach { it.remove() }
         listeners.clear()
@@ -99,6 +118,7 @@ class UniWearFirestoreDataSource private constructor(private val firestore: Fire
         private const val COLLECTION_ITEMS = "items"
         private const val COLLECTION_ORDERS = "orders"
         private const val COLLECTION_NOTIFICATIONS = "notifications"
+        private const val COLLECTION_STUDENT_ACCOUNTS = "student_accounts"
 
         fun create(context: Context): UniWearFirestoreDataSource? {
             FirebaseApp.getApps(context).firstOrNull()?.let { app ->
@@ -126,6 +146,29 @@ class UniWearFirestoreDataSource private constructor(private val firestore: Fire
     }
 }
 
+data class StudentAccount(
+    val userId: String,
+    val email: String,
+    val passwordHash: String,
+    val studentName: String
+)
+
+private fun StudentAccount.toMap(): Map<String, Any> = mapOf(
+    "userId" to userId,
+    "email" to email,
+    "passwordHash" to passwordHash,
+    "studentName" to studentName
+)
+
+private fun com.google.firebase.firestore.DocumentSnapshot.toStudentAccount(): StudentAccount? {
+    return StudentAccount(
+        userId = getString("userId") ?: id,
+        email = getString("email") ?: return null,
+        passwordHash = getString("passwordHash") ?: return null,
+        studentName = getString("studentName") ?: return null
+    )
+}
+
 private fun GearItem.toMap(): Map<String, Any> {
     return mapOf(
         "id" to id,
@@ -145,6 +188,7 @@ private fun StudentOrder.toMap(): Map<String, Any> {
         "itemId" to itemId,
         "studentName" to studentName,
         "itemName" to itemName,
+        "size" to (size ?: ""),
         "quantity" to quantity,
         "total" to total,
         "status" to status,
@@ -189,7 +233,8 @@ private fun com.google.firebase.firestore.DocumentSnapshot.toStudentOrder(): Stu
         status = getString("status").orEmpty(),
         paid = getDouble("paid") ?: 0.0,
         claimed = getBoolean("claimed") ?: false,
-        orderDate = getLong("orderDate") ?: 0L
+        orderDate = getLong("orderDate") ?: 0L,
+        size = getString("size")?.takeIf { it.isNotBlank() }
     )
 }
 
@@ -203,4 +248,3 @@ private fun com.google.firebase.firestore.DocumentSnapshot.toStudentNotification
         status = getString("status").orEmpty()
     )
 }
-

@@ -127,12 +127,14 @@
                     android:hint="Student ID"
                     app:boxBackgroundColor="@color/auth_field_background"
                     app:boxStrokeColor="@color/line"
-                    app:hintTextColor="@color/auth_field_hint">
+                    app:hintTextColor="@color/auth_field_hint"
+                    app:helperText="Format: 24-0177">
 
                     <com.google.android.material.textfield.TextInputEditText
                         android:id="@+id/studentIdInput"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
+                        android:maxLength="7"
                         android:inputType="text"
                         android:singleLine="true"
                         android:textColor="@color/auth_field_text"
@@ -155,6 +157,7 @@
                         android:id="@+id/emailStudentInput"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
+                        android:maxLength="254"
                         android:inputType="textEmailAddress"
                         android:singleLine="true"
                         android:textColor="@color/auth_field_text"
@@ -178,6 +181,31 @@
                         android:id="@+id/passwordStudentInput"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
+                        android:maxLength="64"
+                        android:inputType="textPassword"
+                        android:singleLine="true"
+                        android:textColor="@color/auth_field_text"
+                        android:textColorHint="@color/auth_field_hint" />
+                </com.google.android.material.textfield.TextInputLayout>
+
+                <com.google.android.material.textfield.TextInputLayout
+                    android:id="@+id/confirmPasswordStudentInputLayout"
+                    style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp"
+                    android:hint="Confirm Password"
+                    android:visibility="gone"
+                    app:boxBackgroundColor="@color/auth_field_background"
+                    app:boxStrokeColor="@color/line"
+                    app:endIconMode="password_toggle"
+                    app:hintTextColor="@color/auth_field_hint">
+
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/confirmPasswordStudentInput"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:maxLength="64"
                         android:inputType="textPassword"
                         android:singleLine="true"
                         android:textColor="@color/auth_field_text"

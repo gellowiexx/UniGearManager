@@ -1,13 +1,12 @@
 package com.example.unigearmanager
 
-import android.app.AlertDialog
 import android.os.Bundle
 import android.view.View
-import android.widget.EditText
 import android.widget.LinearLayout
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import com.example.unigearmanager.*
 
 class PaymentsActivity : AppCompatActivity() {
     private lateinit var paymentListContainer: LinearLayout
@@ -43,12 +42,9 @@ class PaymentsActivity : AppCompatActivity() {
     private fun paymentCard(order: StudentOrder): View {
         return card().apply {
             addView(label("#${order.id} - ${order.studentName}", size = 18f, bold = true))
-            addView(label("${order.itemName} x ${order.quantity}", size = 14f))
+            addView(label("${order.itemName}${order.sizeLabel()} x ${order.quantity}", size = 14f))
             addView(label("Total: ${formatPeso(order.total)} | Paid: ${formatPeso(order.paid)}", size = 14f))
             addView(chip("Balance: ${formatPeso(order.balance)}", available = false).withMargins(top = 8))
-            addView(primaryButton("Edit Order", red = false).withMargins(top = 10).apply {
-                setOnClickListener { showEditQuantityDialog(order) }
-            })
             addView(primaryButton("Mark Balance Paid").withMargins(top = 10).apply {
                 setOnClickListener {
                     val paidNow = UniWearRepository.markBalancePaid(order.id)
@@ -65,31 +61,7 @@ class PaymentsActivity : AppCompatActivity() {
         }.withMargins(top = 14)
     }
 
-    private fun showEditQuantityDialog(order: StudentOrder) {
-        val input = EditText(this).apply {
-            inputType = android.text.InputType.TYPE_CLASS_NUMBER
-            setText(order.quantity.toString())
-            setSelectAllOnFocus(true)
-            setPadding(dp(18), dp(8), dp(18), dp(8))
-        }
-
-        AlertDialog.Builder(this)
-            .setTitle("Edit Order Quantity")
-            .setMessage(order.itemName)
-            .setView(input)
-            .setPositiveButton("Save") { _, _ ->
-                val quantity = input.text.toString().toIntOrNull()
-                if (quantity != null && UniWearRepository.updateOrderQuantity(order.id, quantity)) {
-                    Toast.makeText(this, "Order updated.", Toast.LENGTH_SHORT).show()
-                    renderPaymentTracking()
-                } else {
-                    Toast.makeText(this, "Not enough stock or invalid quantity.", Toast.LENGTH_SHORT).show()
-                }
-            }
-            .setNegativeButton("Cancel", null)
-            .show()
-    }
-
     private fun formatPeso(amount: Double): String = "PHP %.0f".format(amount)
-}
 
+    private fun StudentOrder.sizeLabel(): String = size?.let { " ($it)" }.orEmpty()
+}

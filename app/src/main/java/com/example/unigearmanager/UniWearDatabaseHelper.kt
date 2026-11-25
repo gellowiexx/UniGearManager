@@ -30,6 +30,7 @@ class UniWearDatabaseHelper(context: Context) :
                 item_id INTEGER NOT NULL,
                 student_name TEXT NOT NULL,
                 item_name TEXT NOT NULL,
+                size TEXT,
                 quantity INTEGER NOT NULL,
                 total REAL NOT NULL,
                 status TEXT NOT NULL,
@@ -56,6 +57,10 @@ class UniWearDatabaseHelper(context: Context) :
     }
 
     override fun onUpgrade(db: SQLiteDatabase, oldVersion: Int, newVersion: Int) {
+        if (oldVersion < 2) {
+            db.execSQL("ALTER TABLE student_orders ADD COLUMN size TEXT")
+            return
+        }
         db.execSQL("DROP TABLE IF EXISTS student_notifications")
         db.execSQL("DROP TABLE IF EXISTS student_orders")
         db.execSQL("DROP TABLE IF EXISTS gear_items")
@@ -114,7 +119,8 @@ class UniWearDatabaseHelper(context: Context) :
                         status = cursor.getString(cursor.getColumnIndexOrThrow("status")),
                         paid = cursor.getDouble(cursor.getColumnIndexOrThrow("paid")),
                         claimed = cursor.getInt(cursor.getColumnIndexOrThrow("claimed")) == 1,
-                        orderDate = cursor.getLong(cursor.getColumnIndexOrThrow("order_date"))
+                        orderDate = cursor.getLong(cursor.getColumnIndexOrThrow("order_date")),
+                        size = cursor.getString(cursor.getColumnIndexOrThrow("size"))
                     )
                 )
             }
@@ -266,6 +272,7 @@ class UniWearDatabaseHelper(context: Context) :
             put("item_id", order.itemId)
             put("student_name", order.studentName)
             put("item_name", order.itemName)
+            put("size", order.size)
             put("quantity", order.quantity)
             put("total", order.total)
             put("status", order.status)
@@ -288,7 +295,7 @@ class UniWearDatabaseHelper(context: Context) :
 
     companion object {
         private const val DATABASE_NAME = "UniWear_manager.db"
-        private const val DATABASE_VERSION = 1
+        private const val DATABASE_VERSION = 2
 
         val defaultItems = listOf(
             GearItem(1, "ID", "Official ID Lanyard", "School Accessory", 85.0, 34, "pcs", "All students"),
@@ -318,4 +325,3 @@ class UniWearDatabaseHelper(context: Context) :
         )
     }
 }
-

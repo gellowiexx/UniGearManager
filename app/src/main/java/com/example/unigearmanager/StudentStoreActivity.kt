@@ -9,9 +9,11 @@ import android.text.InputType
 import android.text.TextWatcher
 import android.view.Gravity
 import android.view.View
+import android.widget.ArrayAdapter
 import android.widget.EditText
 import android.widget.LinearLayout
 import android.widget.ScrollView
+import android.widget.Spinner
 import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
@@ -60,6 +62,8 @@ class StudentStoreActivity : AppCompatActivity() {
             if (::studentNameDisplay.isInitialized) {
                 studentNameDisplay.text = "Name: $currentStudentName"
             }
+        } else if (currentStudentName.isNotEmpty() && ::studentNameDisplay.isInitialized) {
+            studentNameDisplay.text = "Name: $currentStudentName"
         }
         
         renderItems()
@@ -95,7 +99,7 @@ class StudentStoreActivity : AppCompatActivity() {
                         setPadding(dp(12), dp(12), dp(12), dp(12))
                     }.withMargins(top = 14))
                     addView(label("Student Details", size = 18f, bold = true).withMargins(top = 14))
-                    addView(label("Enter your Student ID (1-10)", size = 13f).withMargins(top = 6))
+                    addView(label("Enter your Student ID if you use a demo account", size = 13f).withMargins(top = 6))
                     studentIdInput = EditText(this@StudentStoreActivity).apply {
                         hint = "Student ID"
                         setSingleLine(true)
@@ -147,13 +151,25 @@ class StudentStoreActivity : AppCompatActivity() {
                     })
                     addView(primaryButton("View My Orders", red = false).withMargins(top = 12).apply {
                         setOnClickListener {
-                            if (currentStudentId == 0) {
-                                Toast.makeText(this@StudentStoreActivity, "Enter a valid Student ID (1-10)", Toast.LENGTH_SHORT).show()
+                            if (currentStudentName.isEmpty()) {
+                                Toast.makeText(this@StudentStoreActivity, "Log in or enter a valid Student ID.", Toast.LENGTH_SHORT).show()
                             } else {
                                 val intent = Intent(this@StudentStoreActivity, StudentOrderHistoryActivity::class.java)
                                 intent.putExtra("STUDENT_NAME", currentStudentName)
                                 intent.putExtra("STUDENT_ID", currentStudentId)
                                 startActivity(intent)
+                            }
+                        }
+                    })
+                    addView(primaryButton("View Cart", red = false).withMargins(top = 12).apply {
+                        setOnClickListener {
+                            if (currentStudentName.isEmpty()) {
+                                Toast.makeText(this@StudentStoreActivity, "Log in or enter a valid Student ID.", Toast.LENGTH_SHORT).show()
+                            } else {
+                                startActivity(Intent(this@StudentStoreActivity, StudentCartActivity::class.java).apply {
+                                    putExtra("STUDENT_NAME", currentStudentName)
+                                    putExtra("STUDENT_ID", currentStudentId)
+                                })
                             }
                         }
                     })
@@ -180,6 +196,29 @@ class StudentStoreActivity : AppCompatActivity() {
     }
 
     private fun studentItemCard(item: GearItem): LinearLayout {
+        val sizeSpinner = if (item.requiresSize()) {
+            Spinner(this).apply {
+                adapter = object : ArrayAdapter<String>(
+                    this@StudentStoreActivity,
+                    android.R.layout.simple_spinner_item,
+                    listOf("Small", "Medium", "Large")
+                ) {
+                    override fun getView(position: Int, convertView: View?, parent: android.view.ViewGroup): View =
+                        (super.getView(position, convertView, parent) as TextView).apply {
+                            setTextColor(getColor(R.color.ink))
+                        }
+
+                    override fun getDropDownView(position: Int, convertView: View?, parent: android.view.ViewGroup): View =
+                        (super.getDropDownView(position, convertView, parent) as TextView).apply {
+                            setTextColor(getColor(R.color.ink))
+                        }
+                }.also { it.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item) }
+                setBackgroundResource(R.drawable.bg_note)
+                setPadding(dp(10), 0, dp(10), 0)
+            }
+        } else {
+            null
+        }
         val quantityInput = EditText(this).apply {
             hint = "Qty"
             inputType = InputType.TYPE_CLASS_NUMBER
@@ -196,19 +235,29 @@ class StudentStoreActivity : AppCompatActivity() {
             addView(label("${item.emoji} ${item.name}", size = 18f, bold = true))
             addView(label("${formatPeso(item.price)} per ${item.unitLabel()} | ${stockLabel(item)}", size = 13f))
             addView(label(item.audience, size = 13f))
+            if (sizeSpinner != null) {
+                addView(label("Size", size = 13f, bold = true).withMargins(top = 10))
+                addView(sizeSpinner.withMargins(top = 4).apply {
+                    layoutParams.height = dp(48)
+                })
+            }
             addView(quantityInput.withMargins(top = 10).apply {
                 layoutParams.height = dp(48)
             })
-            addView(primaryButton(if (item.isAvailable) "Place Order" else "Unavailable", red = item.isAvailable).withMargins(top = 10).apply {
+            addView(primaryButton(if (item.isAvailable) "Add to Cart" else "Unavailable", red = item.isAvailable).withMargins(top = 10).apply {
                 isEnabled = item.isAvailable
                 setOnClickListener {
-                    placeStudentOrder(item, quantityInput.text.toString().toIntOrNull())
+                    addStudentCartItem(
+                        item,
+                        quantityInput.text.toString().toIntOrNull(),
+                        sizeSpinner?.selectedItem?.toString()
+                    )
                 }
             })
         }.withMargins(top = 12) as LinearLayout
     }
 
-    private fun placeStudentOrder(item: GearItem, quantity: Int?) {
+    private fun addStudentCartItem(item: GearItem, quantity: Int?, size: String?) {
         if (currentStudentName.isEmpty()) {
             Toast.makeText(this, "Enter a valid Student ID (1-10).", Toast.LENGTH_SHORT).show()
             return
@@ -222,15 +271,14 @@ class StudentStoreActivity : AppCompatActivity() {
             return
         }
 
-        val order = UniWearRepository.placeOrder(currentStudentName, item, quantity)
-        if (order == null) {
-            Toast.makeText(this, "${item.name} is unavailable.", Toast.LENGTH_SHORT).show()
+        val cartItem = UniWearRepository.addToCart(currentStudentName, item, quantity, size)
+        if (cartItem == null) {
+            Toast.makeText(this, "${item.name} cannot be added to cart.", Toast.LENGTH_SHORT).show()
             return
         }
 
-        val message = "Order #${order.id} for ${order.itemName} was submitted."
-        UniWearNotifier.notifyStudent(this, order, "Order submitted", message)
-        Toast.makeText(this, "Order submitted. Watch My Notifications for updates.", Toast.LENGTH_SHORT).show()
+        val sizeText = cartItem.size?.let { " ($it)" }.orEmpty()
+        Toast.makeText(this, "${cartItem.itemName}$sizeText added to cart.", Toast.LENGTH_SHORT).show()
         renderItems()
         renderNotifications()
     }
@@ -291,4 +339,3 @@ class StudentStoreActivity : AppCompatActivity() {
         return if (unit.endsWith("s") && unit.length > 1) unit.dropLast(1) else unit
     }
 }
-

@@ -7,6 +7,7 @@ import android.widget.LinearLayout
 import android.widget.ScrollView
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
+import com.example.unigearmanager.*
 
 class StudentDashboardActivity : AppCompatActivity() {
     private var studentId: Int = 0
@@ -61,11 +62,17 @@ class StudentDashboardActivity : AppCompatActivity() {
                     addView(primaryButton("Order Campus Gear", red = true).withMargins(top = 16).apply {
                         setOnClickListener { openStore() }
                     })
+                    addView(primaryButton("Cart", red = false).withMargins(top = 10).apply {
+                        setOnClickListener { openCart() }
+                    })
                     addView(primaryButton("Pending Orders", red = false).withMargins(top = 10).apply {
                         setOnClickListener { openHistory("PENDING") }
                     })
                     addView(primaryButton("History / Reports", red = false).withMargins(top = 10).apply {
                         setOnClickListener { openHistory("ALL") }
+                    })
+                    addView(primaryButton("Log Out", red = true).withMargins(top = 10).apply {
+                        setOnClickListener { logOut() }
                     })
 
                     addView(label("Recent Actions", size = 18f, bold = true).withMargins(top = 18))
@@ -119,7 +126,7 @@ class StudentDashboardActivity : AppCompatActivity() {
 
         orders.take(4).forEach { order ->
             recentActionsContainer.addView(card().apply {
-                addView(label("Order #${order.id}: ${order.itemName}", size = 15f, bold = true))
+                addView(label("Order #${order.id}: ${order.itemName}${order.sizeLabel()}", size = 15f, bold = true))
                 addView(label("Qty ${order.quantity} | PHP ${String.format("%.2f", order.total)}", size = 13f))
                 addView(label("Status: ${order.status}", size = 13f))
                 addView(label(UniWearRepository.formatDate(order.orderDate), size = 12f))
@@ -134,6 +141,13 @@ class StudentDashboardActivity : AppCompatActivity() {
         })
     }
 
+    private fun openCart() {
+        startActivity(Intent(this, StudentCartActivity::class.java).apply {
+            putExtra("STUDENT_ID", studentId)
+            putExtra("STUDENT_NAME", studentName)
+        })
+    }
+
     private fun openHistory(filter: String) {
         startActivity(Intent(this, StudentOrderHistoryActivity::class.java).apply {
             putExtra("STUDENT_ID", studentId)
@@ -142,11 +156,19 @@ class StudentDashboardActivity : AppCompatActivity() {
         })
     }
 
+    private fun logOut() {
+        startActivity(Intent(this, MainActivity::class.java).apply {
+            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+        })
+        finish()
+    }
+
     private fun View.withWeight(right: Int = 0): View {
         layoutParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f).apply {
             setMargins(0, 0, dp(right), 0)
         }
         return this
     }
-}
 
+    private fun StudentOrder.sizeLabel(): String = size?.let { " ($it)" }.orEmpty()
+}

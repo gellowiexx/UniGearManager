@@ -27,10 +27,24 @@ data class StudentOrder(
     var status: String,
     var paid: Double,
     var claimed: Boolean,
-    val orderDate: Long = System.currentTimeMillis()
+    val orderDate: Long = System.currentTimeMillis(),
+    val size: String? = null
 ) {
     val balance: Double
         get() = total - paid
+}
+
+data class CartItem(
+    val id: Int,
+    val studentName: String,
+    val itemId: Int,
+    val itemName: String,
+    val size: String?,
+    var quantity: Int,
+    val unitPrice: Double
+) {
+    val total: Double
+        get() = unitPrice * quantity
 }
 
 data class StudentNotification(
@@ -63,6 +77,8 @@ object UniWearRepository {
     val items = UniWearDatabaseHelper.defaultItems.toMutableList()
     val orders = UniWearDatabaseHelper.defaultOrders.toMutableList()
     val notifications = UniWearDatabaseHelper.defaultNotifications.toMutableList()
+    val studentAccounts = mutableListOf<StudentAccount>()
+    val cartItems = mutableListOf<CartItem>()
 
     fun init(context: Context) {
         if (database != null) return
@@ -93,6 +109,10 @@ object UniWearRepository {
                     notifications.replaceWith(remoteNotifications)
                     database?.replaceNotifications(remoteNotifications)
                     notifyDataChanged()
+                },
+                onAccountsChanged = { accounts ->
+                    studentAccounts.replaceWith(accounts)
+                    notifyDataChanged()
                 }
             )
         }
@@ -100,6 +120,17 @@ object UniWearRepository {
 
     val isRemoteSyncEnabled: Boolean
         get() = firestore != null
+
+    fun saveStudentAccount(account: StudentAccount) {
+        firestore?.saveStudentAccount(account)
+        studentAccounts.removeAll { it.userId == account.userId }
+        studentAccounts.add(account)
+        notifyDataChanged()
+    }
+
+    fun getStudentAccount(userId: String, onResult: (StudentAccount?) -> Unit) {
+        firestore?.getStudentAccount(userId, onResult) ?: onResult(studentAccounts.firstOrNull { it.userId == userId })
+    }
 
     fun addChangeListener(listener: () -> Unit) {
         changeListeners.add(listener)
@@ -213,7 +244,57 @@ object UniWearRepository {
         return true
     }
 
-    fun placeOrder(studentName: String, item: GearItem, quantity: Int): StudentOrder? {
+    fun addToCart(studentName: String, item: GearItem, quantity: Int, size: String? = null): CartItem? {
+        if (!item.isAvailable || quantity <= 0 || quantity > item.stock) return null
+        val normalizedSize = size?.takeIf { it.isNotBlank() }
+        val existing = cartItems.firstOrNull {
+            it.studentName.equals(studentName, ignoreCase = true) &&
+                it.itemId == item.id &&
+                it.size == normalizedSize
+        }
+        if (existing != null) {
+            if (existing.quantity + quantity > item.stock) return null
+            existing.quantity += quantity
+            notifyDataChanged()
+            return existing
+        }
+
+        val cartItem = CartItem(
+            id = nextUniqueId(cartItems.maxOfOrNull { it.id } ?: 0),
+            studentName = studentName,
+            itemId = item.id,
+            itemName = item.name,
+            size = normalizedSize,
+            quantity = quantity,
+            unitPrice = item.price
+        )
+        cartItems.add(0, cartItem)
+        notifyDataChanged()
+        return cartItem
+    }
+
+    fun getCartForStudent(studentName: String): List<CartItem> {
+        return cartItems.filter { it.studentName.equals(studentName, ignoreCase = true) }
+    }
+
+    fun removeCartItem(cartItemId: Int): Boolean {
+        val removed = cartItems.removeAll { it.id == cartItemId }
+        if (removed) notifyDataChanged()
+        return removed
+    }
+
+    fun placeCartItemOrder(cartItemId: Int): StudentOrder? {
+        val cartItem = cartItems.firstOrNull { it.id == cartItemId } ?: return null
+        val item = itemById(cartItem.itemId) ?: return null
+        val order = placeOrder(cartItem.studentName, item, cartItem.quantity, cartItem.size) ?: return null
+        cartItems.removeAll { it.id == cartItemId }
+        notifyDataChanged()
+        return order
+    }
+
+    fun placeOrder(studentName: String, item: GearItem, quantity: Int, size: String? = null): StudentOrder? {
+        val normalizedSize = size?.takeIf { it.isNotBlank() }
+        if (item.requiresSize() && normalizedSize == null) return null
         if (!item.isAvailable || quantity <= 0 || quantity > item.stock) return null
         item.stock -= quantity
         val order = StudentOrder(
@@ -225,7 +306,8 @@ object UniWearRepository {
             total = item.price * quantity,
             status = if (item.category.contains("Fabric")) "Fabric cutting" else "Queued for release",
             paid = 0.0,
-            claimed = false
+            claimed = false,
+            size = normalizedSize
         )
         orders.add(0, order)
         database?.updateItem(item)
@@ -409,3 +491,7 @@ object UniWearRepository {
     private const val DAY_MS = 24 * 60 * 60 * 1000L
 }
 
+fun GearItem.requiresSize(): Boolean {
+    val searchable = "$name $category".lowercase()
+    return listOf("uniform", "hoodie", "shirt", "coat", "outfit", "clothing").any { it in searchable }
+}

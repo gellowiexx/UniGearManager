@@ -6,6 +6,7 @@ import android.widget.LinearLayout
 import android.widget.ScrollView
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
+import com.example.unigearmanager.*
 
 class TargetUsersActivity : AppCompatActivity() {
     private lateinit var activeUsersContainer: LinearLayout
@@ -62,16 +63,13 @@ class TargetUsersActivity : AppCompatActivity() {
     private fun renderActiveUsers() {
         activeUsersContainer.removeAllViews()
         
-        // Get all unique students who have placed orders
-        val activeStudents = UniWearRepository.orders
-            .map { it.studentName }
-            .distinct()
-            .sorted()
+        val activeStudents = (UniWearRepository.studentAccounts.map { it.studentName } +
+            UniWearRepository.orders.map { it.studentName }).distinctBy { it.lowercase() }.sorted()
         
         if (activeStudents.isEmpty()) {
             activeUsersContainer.addView(card().apply {
                 addView(label("No active orders yet", size = 14f, bold = true))
-                addView(label("Students who place orders will appear here.", size = 13f))
+                addView(label("Students who create an account or place an order will appear here.", size = 13f))
             }.withMargins(top = 10))
             return
         }
@@ -79,7 +77,7 @@ class TargetUsersActivity : AppCompatActivity() {
         activeUsersContainer.addView(label("Total Active Users: ${activeStudents.size}", size = 16f, bold = true).withMargins(top = 10))
 
         activeStudents.forEach { studentName ->
-            val studentOrders = UniWearRepository.orders.filter { it.studentName == studentName }
+            val studentOrders = UniWearRepository.orders.filter { it.studentName.equals(studentName, ignoreCase = true) }
             val pendingOrders = studentOrders.filter { !it.claimed && it.status != "Claimed" && it.status != "Ready for pickup" }
             val readyOrders = studentOrders.filter { it.status == "Ready for pickup" && !it.claimed }
 

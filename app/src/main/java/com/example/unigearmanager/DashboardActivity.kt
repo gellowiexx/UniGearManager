@@ -17,9 +17,6 @@ class DashboardActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_dashboard)
 
-        findViewById<MaterialButton>(R.id.btnCatalog).setOnClickListener {
-            startActivity(Intent(this, CatalogActivity::class.java))
-        }
         findViewById<MaterialButton>(R.id.btnOrders).setOnClickListener {
             startActivity(Intent(this, StaffOrderProcessingActivity::class.java))
         }
@@ -41,6 +38,9 @@ class DashboardActivity : AppCompatActivity() {
         findViewById<MaterialButton>(R.id.btnStatus).setOnClickListener {
             startActivity(Intent(this, AvailabilityActivity::class.java))
         }
+        findViewById<MaterialButton>(R.id.btnLogout).setOnClickListener {
+            logOut()
+        }
     }
 
     override fun onStart() {
@@ -59,22 +59,12 @@ class DashboardActivity : AppCompatActivity() {
     }
 
     private fun renderMetrics() {
-        findViewById<TextView>(R.id.txtStudentsServedMetric).text =
-            UniWearRepository.studentsServed.toString()
-        findViewById<TextView>(R.id.txtActiveOrdersMetric).text =
-            UniWearRepository.activeOrders.toString()
-        findViewById<TextView>(R.id.txtGearItemsMetric).text =
-            UniWearRepository.items.size.toString()
-        findViewById<TextView>(R.id.txtGearItemsBadge).text =
-            UniWearRepository.items.size.toString()
         findViewById<TextView>(R.id.txtItemsSummary).text =
             "${UniWearRepository.items.size}\nItems"
         findViewById<TextView>(R.id.txtActiveOrdersSummary).text =
             "${UniWearRepository.activeOrders}\nOrders"
         findViewById<TextView>(R.id.txtLowStockSummary).text =
             "${UniWearRepository.lowStockItems}\nLow Stock"
-        findViewById<TextView>(R.id.txtOrderValueMetric).text =
-            formatCompactPeso(UniWearRepository.totalPaid)
         findViewById<TextView>(R.id.txtPaidSummary).text =
             "${UniWearRepository.fullyPaidOrders}\nPaid"
     }
@@ -86,5 +76,11 @@ class DashboardActivity : AppCompatActivity() {
             "PHP %.0f".format(amount)
         }
     }
-}
 
+    private fun logOut() {
+        startActivity(Intent(this, MainActivity::class.java).apply {
+            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+        })
+        finish()
+    }
+}

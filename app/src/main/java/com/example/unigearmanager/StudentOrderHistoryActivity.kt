@@ -111,7 +111,7 @@ class StudentOrderHistoryActivity : AppCompatActivity() {
     private fun createOrderCard(order: StudentOrder): LinearLayout {
         return card().apply {
             addView(
-                label("Order #${order.id} - ${order.itemName}", size = 16f, bold = true)
+                label("Order #${order.id} - ${order.itemName}${order.sizeLabel()}", size = 16f, bold = true)
             )
             addView(
                 label("Qty: ${order.quantity} | Total: PHP ${String.format("%.2f", order.total)}", size = 13f)
@@ -201,6 +201,8 @@ class StudentOrderHistoryActivity : AppCompatActivity() {
             cornerRadius = dp(14)
         }
     }
+
+    private fun StudentOrder.sizeLabel(): String = size?.let { " ($it)" }.orEmpty()
 
     private fun LinearLayout.withMargins(
         start: Int = 0,

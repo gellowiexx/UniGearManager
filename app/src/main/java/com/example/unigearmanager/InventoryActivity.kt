@@ -8,6 +8,7 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.google.android.material.button.MaterialButton
+import com.example.unigearmanager.*
 
 class InventoryActivity : AppCompatActivity() {
     private lateinit var inventoryListContainer: LinearLayout

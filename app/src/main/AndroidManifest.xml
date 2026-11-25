@@ -25,6 +25,9 @@
             android:name=".StudentStoreActivity"
             android:exported="false" />
         <activity
+            android:name=".StudentCartActivity"
+            android:exported="false" />
+        <activity
             android:name=".TargetUsersActivity"
             android:exported="false" />
         <activity
